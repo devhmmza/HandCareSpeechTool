@@ -1,0 +1,49 @@
+import tkinter as tk
+import speech_recognition as sr
+from tkinter import messagebox
+
+def record_and_recognize():
+    recognizer = sr.Recognizer()
+
+    with sr.Microphone() as source:
+        status_label.config(text="Listening...")
+        window.update()
+        try:
+            audio = recognizer.listen(source, timeout=30)
+            status_label.config(text="Recognizing...")
+            window.update()
+            text = recognizer.recognize_google(audio)
+            output_text.delete(1.0, tk.END)
+            output_text.insert(tk.END, text)
+            status_label.config(text="Done")
+        except sr.WaitTimeoutError:
+            status_label.config(text="No speech detected.")
+            messagebox.showwarning("Timeout", "No speech detected. Try again.")
+        except sr.UnknownValueError:
+            status_label.config(text="Could not understand.")
+            messagebox.showerror("Error", "Could not understand the audio.")
+        except sr.RequestError:
+            status_label.config(text="Service error.")
+            messagebox.showerror("Error", "API unavailable or no internet.")
+
+# GUI setup
+window = tk.Tk()
+window.title("Speech to Text Tool")
+window.geometry("500x300")
+window.resizable(False, False)
+
+# Widgets
+title_label = tk.Label(window, text="Speech to Text", font=("Helvetica", 16, "bold"))
+title_label.pack(pady=10)
+
+record_button = tk.Button(window, text="Start Recording", font=("Helvetica", 12), command=record_and_recognize)
+record_button.pack(pady=10)
+
+output_text = tk.Text(window, wrap=tk.WORD, font=("Helvetica", 12), height=7, width=55)
+output_text.pack(pady=10)
+
+status_label = tk.Label(window, text="Status: Idle", font=("Helvetica", 10), fg="blue")
+status_label.pack()
+
+# Run the app
+window.mainloop()
